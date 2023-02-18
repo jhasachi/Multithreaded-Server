@@ -1,9 +1,6 @@
 
-
 import msg
-'''
-Calculate Hash and Compare
-'''
+
 def calculate_hash(client_socket):
     server_data = getMessage(client_socket)
     server_data = (server_data[:-2])
@@ -37,8 +34,6 @@ def calculate_hash(client_socket):
     else:
         client_socket.sendall(msg.SERVER_LOGIN_FAILED.encode())
         client_socket.close()
-
-    print("Authentication Complete")
 
 
 def sendMessage(clientConnection, message):

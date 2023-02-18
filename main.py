@@ -1,6 +1,6 @@
-import socket
-from RobotController import calculate_hash
 
+import socket
+from robo import calculate_hash
 
 def main():
 
@@ -11,14 +11,12 @@ def main():
     while True:
 
         try:
-            print("Hello")
             client_socket, client_address = server_socket.accept()
             calculate_hash(client_socket)
             print(client_address)
             client_socket.settimeout(10)
 
         except Exception:
-            print("Some Error Occured, Closing Connection")
             client_socket.close()
 
 
