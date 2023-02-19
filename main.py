@@ -1,6 +1,6 @@
 
 import socket
-from robo import calculate_hash
+from robo import build_connection
 
 def main():
 
@@ -12,13 +12,11 @@ def main():
 
         try:
             client_socket, client_address = server_socket.accept()
-            calculate_hash(client_socket)
-            print(client_address)
+            build_connection(client_socket)
             client_socket.settimeout(10)
 
         except Exception:
             client_socket.close()
-
 
 if __name__ == '__main__':
     main()
