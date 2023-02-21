@@ -52,17 +52,16 @@ def find_direction(curr_x, curr_y, new_x, new_y):
 def find_method(x, y, direction, client_socket):
 
     value = -1
+
     if direction == 1:
         if y >= 0:
             for i in range(2):
                 rotate_right(client_socket)
                 value = 3
             move_to_abscissa(client_socket, x, y, value)
-
         elif y < 0:
             value = 1
             move_to_abscissa(client_socket, x, y, value)
-
     elif direction == 2:
         if y >= 0:
             rotate_left(client_socket)
@@ -72,7 +71,6 @@ def find_method(x, y, direction, client_socket):
             rotate_right(client_socket)
             value = 1
             move_to_abscissa(client_socket, x, y, value)
-
     elif direction == 3:
         if y >= 0:
             value = 3
@@ -113,7 +111,6 @@ def move_to_abscissa(client_socket, x, y, direction):
     while new_y != 0:
         response = move_forward(client_socket)
         tokens = response[0:-2].split()
-
         curr_x, curr_y = new_x, new_y
         new_x, new_y = int(tokens[1]), int(tokens[2])
 
@@ -144,7 +141,6 @@ def move_to_ordinates(client_socket, x, y):
     while new_x != 0:
         response = move_forward(client_socket)
         tokens = response[0:-2].split()
-
         curr_x, curr_y = new_x, new_y
         new_x, new_y = int(tokens[1]), int(tokens[2])
 
@@ -168,21 +164,23 @@ def pick_message(client_socket):
     client_socket.close()
 
 def build_connection(client_socket):
-
+    # This function help's in building the connection between server and client.
     hash_value = find_hash(client_socket)
-
     key_data = read_key(client_socket)
 
     server_values = {0: 23019, 1: 32037, 2: 18789, 3: 16443, 4: 18189}
+    # By the help of dictionary we check value for resulting server key.
     server_hash = (server_values[key_data] + hash_value) % 65536
 
     server_confirmation = send_confirmation(client_socket, f"{server_hash}\a\b")
+    # From this function we will send confirmation code by adding \a\b in the end and collect server confirmation code.
     server_confirmation = int(server_confirmation[:-2])
 
     clients_values = {0: 32037, 1: 29295, 2: 13603, 3: 29533, 4: 21952}
     client_hash = (clients_values[key_data] + hash_value) % 65536
 
     if server_confirmation == client_hash:
+        # Here we check calculated confirmation code is similar to server confirmation code.
         send_command(client_socket, msg.SERVER_OK)
         find_point(client_socket)
     else:
@@ -190,24 +188,25 @@ def build_connection(client_socket):
         client_socket.close()
 
 def find_hash(client_socket):
+
     server_data = read_username(client_socket)[:-2]
 
     n = list()
     for x in server_data:
         n.append(ord(x))
-
+        # Using ord function we can access ascii value of given data and store in list by using append function.
     value = 0
     for num in n:
         value = value + num
-
     hash_value = (value * 1000) % 65536
 
     return hash_value
 
 def rotate_right(client_socket):
-    send_command(client_socket, msg.SERVER_TURN_RIGHT)
 
+    send_command(client_socket, msg.SERVER_TURN_RIGHT)
     value = read_response(client_socket)
+
     if len(value) > 12:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
@@ -215,9 +214,10 @@ def rotate_right(client_socket):
     return value
 
 def rotate_left(client_socket):
-    send_command(client_socket, msg.SERVER_TURN_LEFT)
 
+    send_command(client_socket, msg.SERVER_TURN_LEFT)
     value = read_response(client_socket)
+
     if len(value) > 12:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
@@ -236,14 +236,21 @@ def move_forward(client_socket):
     return value
 
 def read_key(client_socket):
-    send_command(client_socket, msg.SERVER_KEY_REQUEST)
 
+    send_command(client_socket, msg.SERVER_KEY_REQUEST)
     value = read_response(client_socket)
-    if len(value) > 5:
+
+    try:
+        value = int(value.rstrip('\a\b'))
+        # rstrip used to remove any occurrences of the escape characters "\a\b" from the end of the value string.
+    except ValueError:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
 
-    value = int(value[:-2])
+    if len(str(value)) > 5:
+        send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
+        client_socket.close()
+
     if value > 4 or value < 0:
         send_command(client_socket, msg.SERVER_KEY_OUT_OF_RANGE_ERROR)
         client_socket.close()
@@ -268,9 +275,10 @@ def is_valid_username(message):
     return True
 
 def send_confirmation(client_socket, command):
-    send_command(client_socket, command)
 
+    send_command(client_socket, command)
     value = read_response(client_socket)
+
     if len(value) > 7:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
@@ -278,9 +286,9 @@ def send_confirmation(client_socket, command):
     return value
 
 def send_command(client_socket, command):
+
     client_socket.sendall(command.encode())
 
 def read_response(client_socket):
+
     return client_socket.recv(1024).decode()
-
-
