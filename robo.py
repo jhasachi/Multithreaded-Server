@@ -282,3 +282,5 @@ def send_command(client_socket, command):
 
 def read_response(client_socket):
     return client_socket.recv(1024).decode()
+
+
