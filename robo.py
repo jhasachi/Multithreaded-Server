@@ -7,7 +7,7 @@ def find_point(client_socket):
     curr_x, curr_y = -1, -1
 
     for i in range(2):
-        response = move_forward(client_socket, msg.SERVER_MOVE)
+        response = move_forward(client_socket)
         tokens = response[0:-2].split()
         x, y = int(tokens[1]), int(tokens[2])
 
@@ -21,7 +21,18 @@ def find_point(client_socket):
             if new_x == 0 and new_y == 0:
                 reach_origin(client_socket, new_x, new_y)
 
-    find_method(new_x, new_y, find_direction(new_x, new_y, curr_x, curr_y), client_socket)
+        if curr_x == new_x and curr_y == new_y:
+            escape = initial_obstacle(client_socket)
+            escape = escape[0:-2].split()
+            new_x, new_y = int(escape[1]), int(escape[2])
+
+    find_method(new_x, new_y, find_direction(curr_x, curr_y, new_x, new_y), client_socket)
+
+def initial_obstacle(client_socket):
+
+    rotate_right(client_socket)
+    value = move_forward(client_socket)
+    return value
 
 def find_direction(curr_x, curr_y, new_x, new_y):
 
@@ -40,18 +51,19 @@ def find_direction(curr_x, curr_y, new_x, new_y):
 
 def find_method(x, y, direction, client_socket):
 
+    value = -1
     if direction == 1:
         if y >= 0:
             for i in range(2):
                 rotate_right(client_socket)
                 value = 3
-                move_to_abscissa(client_socket, x, y, value)
+            move_to_abscissa(client_socket, x, y, value)
 
         elif y < 0:
             value = 1
             move_to_abscissa(client_socket, x, y, value)
 
-    if direction == 2:
+    elif direction == 2:
         if y >= 0:
             rotate_left(client_socket)
             value = 3
@@ -61,7 +73,7 @@ def find_method(x, y, direction, client_socket):
             value = 1
             move_to_abscissa(client_socket, x, y, value)
 
-    if direction == 3:
+    elif direction == 3:
         if y >= 0:
             value = 3
             move_to_abscissa(client_socket, x, y, value)
@@ -69,8 +81,8 @@ def find_method(x, y, direction, client_socket):
             for i in range(2):
                 rotate_right(client_socket)
                 value = 1
-                move_to_abscissa(client_socket, x, y, value)
-    if direction == 4:
+            move_to_abscissa(client_socket, x, y, value)
+    elif direction == 4:
         if y >= 0:
             rotate_right(client_socket)
             value = 3
@@ -80,28 +92,68 @@ def find_method(x, y, direction, client_socket):
             value = 1
             move_to_abscissa(client_socket, x, y, value)
 
+def escape_obstacle(client_socket):
+
+    rotate_right(client_socket)
+    move_forward(client_socket)
+    rotate_left(client_socket)
+    move_forward(client_socket)
+    move_forward(client_socket)
+    rotate_left(client_socket)
+    move_forward(client_socket)
+
+    value = rotate_right(client_socket)
+    return value
+
 def move_to_abscissa(client_socket, x, y, direction):
 
-    while y != 0:
-        response = move_forward(client_socket, msg.SERVER_MOVE)
-        token = response.split()
-        x, y = int(token[1]), int(token[2])
+    new_x = x
+    new_y = y
+
+    while new_y != 0:
+        response = move_forward(client_socket)
+        tokens = response[0:-2].split()
+
+        curr_x, curr_y = new_x, new_y
+        new_x, new_y = int(tokens[1]), int(tokens[2])
+
+        if new_x == curr_x and new_y == curr_y:
+            escape = escape_obstacle(client_socket)
+            escape = escape[0:-2].split()
+            new_x, new_y = int(escape[1]), int(escape[2])
 
     if direction == 3:
-            rotate_left(client_socket)
-    if direction == 1:
-            rotate_right(client_socket)
+        if new_x < 0:
+          rotate_left(client_socket)
+        elif new_x > 0:
+          rotate_right(client_socket)
 
-    move_to_ordinates(client_socket, x, y)
+    elif direction == 1:
+        if new_x < 0:
+          rotate_right(client_socket)
+        elif new_x > 0:
+          rotate_left(client_socket)
+
+    move_to_ordinates(client_socket, new_x, new_y)
 
 def move_to_ordinates(client_socket, x, y):
 
-    while x != 0:
-        response = move_forward(client_socket, msg.SERVER_MOVE)
-        token = response.split()
-        x, y = int(token[1]), int(token[2])
+    new_x = x
+    new_y = y
 
-    reach_origin(client_socket, x, y)
+    while new_x != 0:
+        response = move_forward(client_socket)
+        tokens = response[0:-2].split()
+
+        curr_x, curr_y = new_x, new_y
+        new_x, new_y = int(tokens[1]), int(tokens[2])
+
+        if new_x == curr_x and new_y == curr_y:
+            escape = escape_obstacle(client_socket)
+            escape = escape[0:-2].split()
+            new_x, new_y = int(escape[1]), int(escape[2])
+
+    reach_origin(client_socket, new_x, new_y)
 
 def reach_origin(client_socket, x, y):
 
@@ -119,12 +171,12 @@ def build_connection(client_socket):
 
     hash_value = find_hash(client_socket)
 
-    key_data = read_key(client_socket, msg.SERVER_KEY_REQUEST)
+    key_data = read_key(client_socket)
 
     server_values = {0: 23019, 1: 32037, 2: 18789, 3: 16443, 4: 18189}
     server_hash = (server_values[key_data] + hash_value) % 65536
 
-    server_confirmation = read_confirmation(client_socket, f"{server_hash}\a\b")
+    server_confirmation = send_confirmation(client_socket, f"{server_hash}\a\b")
     server_confirmation = int(server_confirmation[:-2])
 
     clients_values = {0: 32037, 1: 29295, 2: 13603, 3: 29533, 4: 21952}
@@ -172,18 +224,19 @@ def rotate_left(client_socket):
 
     return value
 
-def move_forward(client_socket, command):
-    send_command(client_socket, command)
+def move_forward(client_socket):
 
+    send_command(client_socket, msg.SERVER_MOVE)
     value = read_response(client_socket)
+
     if len(value) > 12:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
 
     return value
 
-def read_key(client_socket, command):
-    send_command(client_socket, command)
+def read_key(client_socket):
+    send_command(client_socket, msg.SERVER_KEY_REQUEST)
 
     value = read_response(client_socket)
     if len(value) > 5:
@@ -214,7 +267,7 @@ def is_valid_username(message):
 
     return True
 
-def read_confirmation(client_socket, command):
+def send_confirmation(client_socket, command):
     send_command(client_socket, command)
 
     value = read_response(client_socket)
