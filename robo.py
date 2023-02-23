@@ -15,24 +15,22 @@ def find_point(client_socket):
             curr_x, curr_y = x, y
             if curr_x == 0 and curr_y == 0:
                 reach_origin(client_socket, curr_x, curr_y)
-
-        if i == 1:
+        elif i == 1:
             new_x, new_y = x, y
             if new_x == 0 and new_y == 0:
                 reach_origin(client_socket, new_x, new_y)
 
-        if curr_x == new_x and curr_y == new_y:
-            escape = initial_obstacle(client_socket)
-            escape = escape[0:-2].split()
-            new_x, new_y = int(escape[1]), int(escape[2])
+    if curr_x == new_x and curr_y == new_y:
+        escape = initial_obstacle(client_socket)
+        escape = escape[0:-2].split()
+        new_x, new_y = int(escape[1]), int(escape[2])
 
     find_method(new_x, new_y, find_direction(curr_x, curr_y, new_x, new_y), client_socket)
 
 def initial_obstacle(client_socket):
 
     rotate_right(client_socket)
-    value = move_forward(client_socket)
-    return value
+    return move_forward(client_socket)
 
 def find_direction(curr_x, curr_y, new_x, new_y):
 
@@ -91,7 +89,7 @@ def find_method(x, y, direction, client_socket):
             move_to_abscissa(client_socket, x, y, value)
 
 def escape_obstacle(client_socket):
-
+    print("Message: Function Call: Obstacle Encountered ")
     rotate_right(client_socket)
     move_forward(client_socket)
     rotate_left(client_socket)
@@ -99,9 +97,7 @@ def escape_obstacle(client_socket):
     move_forward(client_socket)
     rotate_left(client_socket)
     move_forward(client_socket)
-
-    value = rotate_right(client_socket)
-    return value
+    return rotate_right(client_socket)
 
 def move_to_abscissa(client_socket, x, y, direction):
 
@@ -109,6 +105,7 @@ def move_to_abscissa(client_socket, x, y, direction):
     new_y = y
 
     while new_y != 0:
+
         response = move_forward(client_socket)
         tokens = response[0:-2].split()
         curr_x, curr_y = new_x, new_y
@@ -118,6 +115,25 @@ def move_to_abscissa(client_socket, x, y, direction):
             escape = escape_obstacle(client_socket)
             escape = escape[0:-2].split()
             new_x, new_y = int(escape[1]), int(escape[2])
+
+            if curr_y > 0:
+                if new_y < 0:
+                    response = origin_obstacle(client_socket, new_x, new_y)
+                    tokens = response[0:-2].split()
+                    new_x, new_y = int(tokens[1]), int(tokens[2])
+                    if direction == 1:
+                        direction = 3
+                    elif direction == 3:
+                        direction = 1
+            elif curr_y < 0:
+                if new_y > 0:
+                    response = origin_obstacle(client_socket, new_x, new_y)
+                    tokens = response[0:-2].split()
+                    new_x, new_y = int(tokens[1]), int(tokens[2])
+                    if direction == 1:
+                        direction = 3
+                    elif direction == 3:
+                        direction = 1
 
     if direction == 3:
         if new_x < 0:
@@ -132,6 +148,13 @@ def move_to_abscissa(client_socket, x, y, direction):
           rotate_left(client_socket)
 
     move_to_ordinates(client_socket, new_x, new_y)
+
+def origin_obstacle(client_socket, x, y):
+
+    rotate_right(client_socket)
+    move_forward(client_socket)
+    rotate_right(client_socket)
+    return move_forward(client_socket)
 
 def move_to_ordinates(client_socket, x, y):
 
