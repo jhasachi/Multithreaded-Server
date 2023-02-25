@@ -1,7 +1,7 @@
 
 import msg
 
-def find_point(client_socket):
+def initial_point(client_socket):
 
     new_x, new_y = -1, -1
     curr_x, curr_y = -1, -1
@@ -25,7 +25,7 @@ def find_point(client_socket):
         escape = escape[0:-2].split()
         new_x, new_y = int(escape[1]), int(escape[2])
 
-    find_method(new_x, new_y, find_direction(curr_x, curr_y, new_x, new_y), client_socket)
+    face_towards_abscissa(new_x, new_y, find_direction(curr_x, curr_y, new_x, new_y), client_socket)
 
 def initial_obstacle(client_socket):
 
@@ -47,7 +47,7 @@ def find_direction(curr_x, curr_y, new_x, new_y):
         direction = 1
     return direction
 
-def find_method(x, y, direction, client_socket):
+def face_towards_abscissa(x, y, direction, client_socket):
 
     value = -1
 
@@ -87,17 +87,6 @@ def find_method(x, y, direction, client_socket):
             rotate_left(client_socket)
             value = 1
             move_to_abscissa(client_socket, x, y, value)
-
-def escape_obstacle(client_socket):
-    print("Message: Function Call: Obstacle Encountered ")
-    rotate_right(client_socket)
-    move_forward(client_socket)
-    rotate_left(client_socket)
-    move_forward(client_socket)
-    move_forward(client_socket)
-    rotate_left(client_socket)
-    move_forward(client_socket)
-    return rotate_right(client_socket)
 
 def move_to_abscissa(client_socket, x, y, direction):
 
@@ -149,13 +138,6 @@ def move_to_abscissa(client_socket, x, y, direction):
 
     move_to_ordinates(client_socket, new_x, new_y)
 
-def origin_obstacle(client_socket, x, y):
-
-    rotate_right(client_socket)
-    move_forward(client_socket)
-    rotate_right(client_socket)
-    return move_forward(client_socket)
-
 def move_to_ordinates(client_socket, x, y):
 
     new_x = x
@@ -174,6 +156,24 @@ def move_to_ordinates(client_socket, x, y):
 
     reach_origin(client_socket, new_x, new_y)
 
+def escape_obstacle(client_socket):
+    print("Message: Function Call: Obstacle Encountered ")
+    rotate_right(client_socket)
+    move_forward(client_socket)
+    rotate_left(client_socket)
+    move_forward(client_socket)
+    move_forward(client_socket)
+    rotate_left(client_socket)
+    move_forward(client_socket)
+    return rotate_right(client_socket)
+
+def origin_obstacle(client_socket, x, y):
+
+    rotate_right(client_socket)
+    move_forward(client_socket)
+    rotate_right(client_socket)
+    return move_forward(client_socket)
+
 def reach_origin(client_socket, x, y):
 
     if x == 0 and y == 0:
@@ -181,8 +181,7 @@ def reach_origin(client_socket, x, y):
 
 def pick_message(client_socket):
 
-    send_command(client_socket, msg.SERVER_PICK_UP)
-    read_response(client_socket)
+    read_confirmation_message(client_socket,msg.SERVER_PICK_UP)
     send_command(client_socket,msg.SERVER_LOGOUT)
     client_socket.close()
 
@@ -205,7 +204,7 @@ def build_connection(client_socket):
     if server_confirmation == client_hash:
         # Here we check calculated confirmation code is similar to server confirmation code.
         send_command(client_socket, msg.SERVER_OK)
-        find_point(client_socket)
+        initial_point(client_socket)
     else:
         send_command(client_socket, msg.SERVER_LOGIN_FAILED)
         client_socket.close()
@@ -223,12 +222,14 @@ def find_hash(client_socket):
         value = value + num
     hash_value = (value * 1000) % 65536
 
+    print(value)
     return hash_value
 
 def rotate_right(client_socket):
 
     send_command(client_socket, msg.SERVER_TURN_RIGHT)
-    value = read_response(client_socket)
+    value = get_message(client_socket)
+    print(value)
 
     if len(value) > 12:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
@@ -239,7 +240,8 @@ def rotate_right(client_socket):
 def rotate_left(client_socket):
 
     send_command(client_socket, msg.SERVER_TURN_LEFT)
-    value = read_response(client_socket)
+    value = get_message(client_socket)
+    print(value)
 
     if len(value) > 12:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
@@ -250,7 +252,8 @@ def rotate_left(client_socket):
 def move_forward(client_socket):
 
     send_command(client_socket, msg.SERVER_MOVE)
-    value = read_response(client_socket)
+    value = get_message(client_socket)
+    print(value)
 
     if len(value) > 12:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
@@ -261,11 +264,13 @@ def move_forward(client_socket):
 def read_key(client_socket):
 
     send_command(client_socket, msg.SERVER_KEY_REQUEST)
-    value = read_response(client_socket)
+    value = get_message(client_socket)
+    print(value)
 
     try:
         value = int(value.rstrip('\a\b'))
         # rstrip used to remove any occurrences of the escape characters "\a\b" from the end of the value string.
+        print(value)
     except ValueError:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
@@ -282,7 +287,8 @@ def read_key(client_socket):
 
 def read_username(client_socket):
 
-    value = read_response(client_socket)
+    value = get_message(client_socket)
+    print(value)
 
     if not is_valid_username(value):
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
@@ -300,18 +306,61 @@ def is_valid_username(message):
 def send_confirmation(client_socket, command):
 
     send_command(client_socket, command)
-    value = read_response(client_socket)
+    value = get_message(client_socket)
+
+    print(value)
 
     if len(value) > 7:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
+    elif any(char.isspace() for char in value):
+        send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
+        client_socket.close()
+    else:
+        return value
 
-    return value
+def read_confirmation_message(client_socket, command):
+    send_command(client_socket, command)
+    value = get_message(client_socket)
+
+    if len(value) > 100 or not value.endswith("\a\b"):
+        send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
+        client_socket.close()
+    else:
+        return value
+
+def get_message(client_socket):
+
+    store_message = ''
+    message_index = store_message.find('\a\b')
+
+    if message_index == -1:
+        while True:
+            read_data = read_message(client_socket)
+            store_message += read_data
+
+            message_index = store_message.find('\a\b')
+            if message_index == -1:
+                continue
+            else:
+                correct_message = store_message[:message_index]
+                store_message = store_message[message_index + 2:]
+                return f"{correct_message}\a\b"
+
+        correct_message = store_message[:message_index]
+        store_message = store_message[message_index + 2:]
+
+        print(correct_message)
+        print(store_message)
+
+        return f"{correct_message}\a\b"
 
 def send_command(client_socket, command):
-
     client_socket.sendall(command.encode())
 
-def read_response(client_socket):
-
+def read_message(client_socket):
     return client_socket.recv(1024).decode()
+
+
+
+
