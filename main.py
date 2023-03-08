@@ -11,9 +11,10 @@ def main():
     while True:
 
         try:
+            store_message = ''
             client_socket, client_address = server_socket.accept()
-            build_connection(client_socket)
-            client_socket.settimeout(10)
+            build_connection(client_socket, store_message)
+            client_socket.settimeout(1)
 
         except Exception:
             client_socket.close()
