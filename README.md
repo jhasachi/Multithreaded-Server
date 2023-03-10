@@ -68,19 +68,19 @@ The server has to answer with logout.
 - [x]  Wrong Confirmation
 - [x]  Key out of range
 - [x]  Strange username
-- [ ]  Segmentation
-- [ ]  Merging
-- [ ]  Segmentation + Merging
-- [ ]  Client Confirmation
+- [x]  Segmentation
+- [x]  Merging
+- [x]  Segmentation + Merging
+- [x]  Client Confirmation
 - [x]  Unfinished Message
 - [x]  Constant Obstacles 1
 - [x]  Constant Obstacles 2
 - [x]  Constant Obstacles 3
-- [ ]  Random Obstacle
+- [x]  Random Obstacle
 - [x]  Max length of username
 - [x]  Key is not the number
-- [ ]  Space after confirmation
+- [x]  Space after confirmation
 - [x]  Six digit confirmation
 - [ ]  Floating point coordinates
 - [ ]  Unexpected Spaces
-- [x]  Max length of username exceeded
+- [ ]  Max length of username exceeded
