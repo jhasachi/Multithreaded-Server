@@ -1,3 +1,5 @@
+# Assigned the command with name for easy to access.
+
 SERVER_MOVE = "102 MOVE\a\b"
 SERVER_TURN_LEFT = "103 TURN LEFT\a\b"
 SERVER_TURN_RIGHT = "104 TURN RIGHT\a\b"
