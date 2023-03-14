@@ -264,6 +264,8 @@ def rotate_right(client_socket, store_message):
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
 
+    print(value)
+
     return store_message, value
 
 def rotate_left(client_socket, store_message):
@@ -277,6 +279,8 @@ def rotate_left(client_socket, store_message):
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
 
+    print(value)
+
     return store_message, value
 
 def move_forward(client_socket, store_message):
@@ -284,10 +288,24 @@ def move_forward(client_socket, store_message):
     send_command(client_socket, msg.SERVER_MOVE)
     # @get_message use for receiving the coordinates and stores information in value.
     store_message, value = get_message(client_socket, store_message)
+    # use split function to spilt on the basics of spaces and use slicing for storing coordinates value.
+    tokens = value[0:-2].split()
+    # x contain x axis value and y contain y axis value.
+    x, y = tokens[1], tokens[2]
+    # Used this logic to detect the whether coordinates it integer or float.
+    if '.' in x and float(x) or '.' in y and float(y):
+        send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
+        client_socket.close()
     # Check whether the length is greater than resulting length.
     if len(value) > 12:
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
+    # Check if the message ends with a space and then "\a\b".
+    if value.endswith(" \a\b"):
+        send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
+        client_socket.close()
+
+    print(value)
 
     return store_message, value
 
