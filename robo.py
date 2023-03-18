@@ -2,41 +2,35 @@
 import msg
 
 def initial_coordinates(client_socket, store_message):
-    # Initialize the variable value to -1.
+
     new_x, new_y = -1, -1
     curr_x, curr_y = -1, -1
-    # Used for loop for two time movement.
+
     for i in range(2):
         # @move_forward function used to requesting robot to move forward.
         store_message, response = move_forward(client_socket, store_message)
         # use split function to spilt on the basics of spaces and use slicing for storing coordinates value.
         tokens = response[0:-2].split()
-        # x contain x axis value and y contain y axis value.
+
         x, y = int(tokens[1]), int(tokens[2])
         # use this condition for storing first movement and second movement value differently.
         if i == 0:
-            # first movement value stored in curr_x and curr_y.
             curr_x, curr_y = x, y
             # Use this condition to check after the first movement, it's already on the origin.
             if curr_x == 0 and curr_y == 0:
-                # @reach_origin function used for helping robot to reach origin.
+                # @reach_origin function used for checking robot reach origin.
                 reach_origin(client_socket, curr_x, curr_y, store_message)
         elif i == 1:
-            # Second movement value stored in new_x and new_y.
             new_x, new_y = x, y
-            # Use this condition to check after the second movement, it's already on the origin.
             if new_x == 0 and new_y == 0:
-                # @reach_origin function used for helping robot to reach origin.
                 reach_origin(client_socket, new_x, new_y, store_message)
     # From this condition we can conclude, there is obstacle in starting position.
     if curr_x == new_x and curr_y == new_y:
         # @initial_obstacle function used for handling from the initial obstacle.
         store_message, escape = initial_obstacle(client_socket, store_message)
-        # Use split function to split on the basics of spaces and use slicing to obtain the coordinates.
         escape = escape[0:-2].split()
-        # new_x contains the value of x and new_y contains the value of y.
         new_x, new_y = int(escape[1]), int(escape[2])
-    # @face_towards_abscissa function use for moving robot and make his toward origin.
+    # @face_towards_abscissa function use for moving robot toward X_axis.
     face_towards_abscissa(new_x, new_y, find_direction(curr_x, curr_y, new_x, new_y), client_socket, store_message)
 
 def initial_obstacle(client_socket, store_message):
@@ -60,7 +54,7 @@ def find_direction(curr_x, curr_y, new_x, new_y):
     return direction
 
 def face_towards_abscissa(x, y, direction, client_socket, store_message):
-    # initialise the variable value to -1.
+
     value = -1
     # Use different movement pattern for different direction according to logic.
     if direction == 1:
@@ -72,51 +66,42 @@ def face_towards_abscissa(x, y, direction, client_socket, store_message):
             move_to_abscissa(client_socket, x, y, value, store_message)
         elif y < 0:
             value = 1
-            # @move_to_abscissa function used for helping robot to move toward x_axis line.
             move_to_abscissa(client_socket, x, y, value, store_message)
     elif direction == 2:
         if y >= 0:
             rotate_left(client_socket, store_message)
             value = 3
-            # @move_to_abscissa function used for helping robot to move toward x_axis line.
             move_to_abscissa(client_socket, x, y, value, store_message)
         elif y < 0:
             rotate_right(client_socket, store_message)
             value = 1
-            # @move_to_abscissa function used for helping robot to move toward x_axis line.
             move_to_abscissa(client_socket, x, y, value,store_message)
     elif direction == 3:
         if y >= 0:
             value = 3
-            # @move_to_abscissa function used for helping robot to move toward x_axis line.
             move_to_abscissa(client_socket, x, y, value, store_message)
         elif y < 0:
             for i in range(2):
                 rotate_right(client_socket, store_message)
                 value = 1
-            # @move_to_abscissa function used for helping robot to move toward x_axis line.
             move_to_abscissa(client_socket, x, y, value, store_message)
     elif direction == 4:
         if y >= 0:
             rotate_right(client_socket, store_message)
             value = 3
-            # @move_to_abscissa function used for helping robot to move toward x_axis line.
             move_to_abscissa(client_socket, x, y, value, store_message)
         elif y < 0:
             rotate_left(client_socket, store_message)
             value = 1
-            # @move_to_abscissa function used for helping robot to move toward x_axis line.
             move_to_abscissa(client_socket, x, y, value, store_message)
 
 def move_to_abscissa(client_socket, x, y, direction, store_message):
-    # Initialise new_x and new_y value with function value x and y.
+
     new_x = x
     new_y = y
     # while loop used for helping the robot to move toward to x_axis line.
     while new_y != 0:
-        # @move_forward function used for moving forward.
         store_message, response = move_forward(client_socket, store_message)
-        # Use split function to split on the basics spaces and slicing use for storing coordinates value.
         tokens = response[0:-2].split()
         curr_x, curr_y = new_x, new_y
         new_x, new_y = int(tokens[1]), int(tokens[2])
@@ -160,7 +145,6 @@ def move_to_abscissa(client_socket, x, y, direction, store_message):
     move_to_ordinates(client_socket, new_x, new_y, store_message)
 
 def move_to_ordinates(client_socket, x, y, store_message):
-    # Used new_x and new_y to initialise with function value x and y.
     new_x = x
     new_y = y
     # Robot will keep on moving unless until it reach to origin perfectly.
@@ -214,7 +198,6 @@ def build_connection(client_socket, store_message):
     store_message, hash_value = find_hash(client_socket, store_message)
     # @read_key function used for receiving key value.
     store_message, key_data = read_key(client_socket, store_message)
-    # By the help of dictionary we check value for resulting server key.
     server_values = {0: 23019, 1: 32037, 2: 18789, 3: 16443, 4: 18189}
     server_hash = (server_values[key_data] + hash_value) % 65536
     # @send_confirmation function send the final calculated value by adding \a\b in the end and collect server confirmation code..
@@ -236,7 +219,6 @@ def build_connection(client_socket, store_message):
 def find_hash(client_socket, store_message):
     #used @read_username function for receiving the username.
     store_message, server_data = read_username(client_socket, store_message)
-    # with the help of slicing we will remove last two character /a/b
     server_data = server_data[:-2]
 
     n = list()
@@ -245,7 +227,6 @@ def find_hash(client_socket, store_message):
         n.append(ord(x))
 
     value = 0
-
     for num in n:
         value = value + num
 
@@ -288,20 +269,22 @@ def move_forward(client_socket, store_message):
     send_command(client_socket, msg.SERVER_MOVE)
     # @get_message use for receiving the coordinates and stores information in value.
     store_message, value = get_message(client_socket, store_message)
-    # use split function to spilt on the basics of spaces and use slicing for storing coordinates value.
+
     tokens = value[0:-2].split()
-    # x contain x axis value and y contain y axis value.
     x, y = tokens[1], tokens[2]
+
+    # Check if the message ends with a space and then " \a\b".
+
+    if value.endswith(" \a\b"):
+        send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
+        client_socket.close()
+
     # Used this logic to detect the whether coordinates it integer or float.
     if '.' in x and float(x) or '.' in y and float(y):
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
     # Check whether the length is greater than resulting length.
     if len(value) > 12:
-        send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
-        client_socket.close()
-    # Check if the message ends with a space and then "\a\b".
-    if value.endswith(" \a\b"):
         send_command(client_socket, msg.SERVER_SYNTAX_ERROR)
         client_socket.close()
 
@@ -400,34 +383,25 @@ def get_message(client_socket, store_message):
                 # @store_message store the value from next to \a\b to end.
                 store_message = store_message[message_index + 2:]
                 return store_message, correct_message
-    # @correct_message stores the value from the starting to \a\b.
+
     correct_message = store_message[:message_index + 2]
-    # @store_message store the value from next to \a\b to end.
     store_message = store_message[message_index + 2:]
 
     return store_message, correct_message
 
 def send_command(client_socket, command):
     """
-    :param:
     client_socket this is a socket object that has been created earlier in the code. It represents the client's end of the socket connection.
-    :param:
     sendall(): This method of the socket object sends data to the server. Sends all the data until the remote end has received it all.
-    :param:
     encode() method is used to convert a string to its corresponding byte representation.
-    :return:
     """
     client_socket.sendall(command.encode())
 
 def read_message(client_socket):
     """
-    :param:
     set-timeout() this line sets a timeout of 1 second on the client socket object.
-    :param:
     recv() this line waits to receive up to 1024 bytes of data from the server and the remaining bytes will be stored on the server's buffer.
-    :param:
     decode() this method is used to convert the received bytes to a string and use (UTF-8) for conversion.
-    :return:
     """
     client_socket.settimeout(1)
     return client_socket.recv(1024).decode()
