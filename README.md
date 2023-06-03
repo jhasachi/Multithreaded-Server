@@ -81,6 +81,6 @@ The server has to answer with logout.
 - [x]  Key is not the number
 - [x]  Space after confirmation
 - [x]  Six digit confirmation
-- [ ]  Floating point coordinates
-- [ ]  Unexpected Spaces
-- [ ]  Max length of username exceeded
+- [x]  Floating point coordinates
+- [x]  Unexpected Spaces
+- [x]  Max length of username exceeded
