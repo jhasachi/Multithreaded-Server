@@ -41,7 +41,7 @@ It attempts to pick up the secret message.
 After the robot picks the secret message, it sends to the server.
 The server has to answer with logout.
 
-## Bugs
+## Conditions 
 
 - [x]  Ideal Situation
 - [x]  Wrong Confirmation
