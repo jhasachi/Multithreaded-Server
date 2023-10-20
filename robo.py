@@ -390,18 +390,8 @@ def get_message(client_socket, store_message):
     return store_message, correct_message
 
 def send_command(client_socket, command):
-    """
-    client_socket this is a socket object that has been created earlier in the code. It represents the client's end of the socket connection.
-    sendall(): This method of the socket object sends data to the server. Sends all the data until the remote end has received it all.
-    encode() method is used to convert a string to its corresponding byte representation.
-    """
     client_socket.sendall(command.encode())
 
 def read_message(client_socket):
-    """
-    set-timeout() this line sets a timeout of 1 second on the client socket object.
-    recv() this line waits to receive up to 1024 bytes of data from the server and the remaining bytes will be stored on the server's buffer.
-    decode() this method is used to convert the received bytes to a string and use (UTF-8) for conversion.
-    """
     client_socket.settimeout(1)
     return client_socket.recv(1024).decode()
