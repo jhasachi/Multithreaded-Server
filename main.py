@@ -1,5 +1,5 @@
 """
-Sachin Kumar Jha
+Sachin Jha
 TCP Server
 BIE-PSI
 """
