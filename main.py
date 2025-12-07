@@ -1,9 +1,3 @@
-"""
-Sachin Jha
-TCP Server
-BIE-PSI
-"""
-
 import socket
 from robo import build_connection
 
